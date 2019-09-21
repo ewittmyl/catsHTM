@@ -96,6 +96,10 @@ def cone_search(CatName,RA,Dec,Radius,catalogs_dir='./data',RadiusUnits='arcsec'
         print('Catalog: {0}; cone radius: {1} arcsec; cone center: (RA,DEC)=({2},{3})'.format(CatName,Radius,RA,Dec))
         print('*************')
 
+    # assess how much memory may be needed
+    MAX_ROWS = int(3e6 * ( Radius / 3600 )**2)
+    EXT_STEP = int(MAX_ROWS / 5)
+
     root_to_data=catalogs_dir+'/'
     CatDir=get_CatDir(CatName)
 
@@ -128,19 +132,38 @@ def cone_search(CatName,RA,Dec,Radius,catalogs_dir='./data',RadiusUnits='arcsec'
             print('INFO: the cone does not intercept the catalog')
         cat_onlycone=np.array([])
     else:
+
         FileName_0 = CatFileTemplate % (CatName, FileID[0])
         DataName_0 = htmTemplate % ID_matlab[0]
-        cat = class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName_0).load(DataName_0, numpy_array=True).T
-        #print('shape of cat is',np.shape(cat))
+        
+        cat1 = class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName_0).load(DataName_0, numpy_array=True).T
+
+        ncols = cat1.shape[1]
+        cat = np.zeros((MAX_ROWS, ncols))
+        n = 0
+
+        cat[n:len(cat1)+n, :] = cat1
+        n += len(cat1)
+
         for Iid in range(Nid)[1:]:
             FileName=CatFileTemplate % (CatName, FileID[Iid])
             DataName=htmTemplate % ID_matlab[Iid]
 
-            cat=np.vstack((cat, class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName).load(DataName, numpy_array=True).T))
-        #if OnlyCone==True:
-        D=celestial.sphere_distance_fast(RA,Dec,cat[:,ColRa],cat[:,ColDec])#[0]
-        cat_onlycone=cat[D<Radius,:]
+            cat1 = class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName).load(DataName, numpy_array=True).T
 
+            # increase memory if insufficient
+            if (len(cat1)+n) > cat.shape[0]:
+                    cat.resize((cat.shape[0]+max(EXT_STEP,len(cat1)), ncols))
+
+            cat[n:len(cat1)+n, :] = cat1
+            n += len(cat1)
+
+        if OnlyCone==True:
+            D=celestial.sphere_distance_fast(RA,Dec,cat[:,ColRa],cat[:,ColDec])#[0]
+            cat_onlycone=cat[D<Radius,:]
+        else:
+            cat_onlycone=cat
+                  
     ### a colomne with the cell names:
     if cat_onlycone.ndim>1:
         ColCell=np.empty((np.shape(cat_onlycone)[1]),dtype=object)
