@@ -252,3 +252,4 @@ python catchecker.py 169.80039 31.02912 15
 11   GAIADR2  169.803354  31.032378  14.872855  Unknown
 ```
 
+This script does not include minor planet checking. Also, the searching radius for GLADE is hard-coded as 30 arcsecs.
