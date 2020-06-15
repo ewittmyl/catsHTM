@@ -219,4 +219,36 @@ Data is available from:
 
 The catalog format is based on the HDF5 file format and HDF5 file access utilities, which are available on many platforms. The catalog format is designed to allow fast access for cone searches in the range of 1 arcsec to about 1 deg. For fast access, the sources are sorted into hierarchical triangular mesh (HTM). 
 
+## Contextual checking
+
+The `catchecker.py` in `scripts` is used to perform contextual checking. To run this script, make sure:
+1. You have download all the catalogs you want to use. Line 155 indicates which catalogs you are using. 
+2. Also, you have to change the rootpath of the directory storing all the catalogs in line 12.
+
+To run the script, simply run
+
+```
+python catchecker.py <ra_in_deg> <dec_in_deg> <search_radius_in_arcsec> 
+```
+
+Example:
+
+```
+python catchecker.py 169.80039 31.02912 15
+
+
+     catname          ra        dec     offset    otype
+0       WISE  169.800444  31.029100   0.181770  Unknown
+1        tns  169.800146  31.029003   0.863380    SN Ia
+2   TMASSxsc  169.800385  31.028143   3.517034  Unknown
+3      GLADE  169.800385  31.028143   3.517234   Galaxy
+4     simbad  169.800123  31.028164   3.538789   Galaxy
+5   SpecSDSS  169.800130  31.028162   3.540838  Unknown
+6       NEDz  169.800130  31.028160   3.547851  Unknown
+7     DECaLS  169.800130  31.028143   3.606518  Unknown
+8        PS1  169.800164  31.028123   3.657916  Unknown
+9      TMASS  169.800162  31.028028   3.993625  Unknown
+10   GAIADR1  169.803354  31.032378  14.871874  Unknown
+11   GAIADR2  169.803354  31.032378  14.872855  Unknown
+```
 
